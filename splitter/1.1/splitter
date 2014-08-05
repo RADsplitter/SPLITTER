@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Splitter.py
+#  
+#  Copyright 2014 Arraiano-Castilho et al. 
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+#  
+
+#######################################################
+##                      SPLITTER                     ##
+##             for high divergent genomes            ##
+#######################################################
+
+import sys
+import os
+import csv
+import os.path
+from optparse import OptionParser
+#--------
+import sammod
+import novomod
+
+def main():
+    sys.stderr.write('\n\n'+' '*4+'*'*41+'\n'+\
+                     ' '*6+'Splitter : for high divergent genomes\n'+\
+                     ' '*4+'*'*41+'\n\n')
+    
+    parser = OptionParser(prog="splitter", usage="%prog [options] [arg]", version="%prog 1.0")
+    
+    
+    parser.add_option("-f", "--file", action="store", type="string", dest="filename",
+                      help="input alignment file")
+    parser.add_option('-t', action="store", type="string", dest="informat",
+                      help="input file format (novo or sam)")          
+    parser.add_option("-l", "--list", action="store", type="string", dest="RADlist",
+                      help="input sample/barcode list ")
+    parser.add_option('-o', action="store", type="string", dest="output",
+                      help="insert the output file name ")
+    
+    options, args = parser.parse_args()
+    
+    sys.stderr.write(' '*4+'Splitter log:')
+    
+    
+####------Step 1: inputs files check control-------------####  
+    sys.stderr.write('\n'+'\t'+'-'*5+'step 1: inputs files check'+'-'*8+'\n')
+    
+    if not all([options.filename,options.informat,options.RADlist,options.output]):
+        parser.error ("You must include option -f (file input), -t (file format: novo or sam), -l (barcode/sample list), -o (output file) or -h (help) \n")
+        sys.exit()
+     
+    if os.path.exists(options.filename) :
+        print "\n\tAlignment inputfile in correct directory"
+    if not os.path.exists(options.filename) :
+        parser.error ( "input file does not exist in current directory")
+        sys.exit()
+    
+    datatype = ["novo", "sam"] 
+    if options.informat in datatype :
+        print "\tAlignment inputfile in correct format"
+    if options.informat not in datatype :
+        parser.error( "file format not supported. (option -t)") 
+        sys.exit()
+    
+    if os.path.exists(options.RADlist) :
+        print "\tRADlist file in correct directory"
+        try : 
+         #falta codigo para avaliar formato da lista de amostras 			
+         RADlist = open(options.RADlist).readlines() 
+         RADsamples = len(RADlist)
+         print "\tRADsamples found in your RADlist :", RADsamples
+        except :		
+         print "\tERROR: RADlist wrong file format, please take a look User Manual"
+         sys.exit()
+    if not os.path.exists(options.RADlist) :
+        parser.error("ERROR: RADlist file does not exist in current directory")
+        sys.exit()
+        
+####------Step 2: Running pipeline-------------####  
+    sys.stderr.write('\n'+'\t'+'-'*5+'step 2: Running Pipeline'+'-'*10+'\n')
+    
+      
+    if options.informat == "novo" :
+        print "\n\t",options.informat, "Native report format sellected"
+        novomod.novo(options.filename, options.RADlist, options.output)
+        print "\t", "Analysis completed:", options.output, "is ready"
+        
+        sys.stderr.write('\n'+'\t'+'-'*5+'Finish: leaving SPLITTER'+'-'*10+'\n')     
+   
+    if options.informat == "sam" :
+        print "\n\t", "SAM format sellected"
+        sammod.sam(options.filename, options.RADlist, options.output)    					
+        print "\t", "Analysis completed:", options.output, "is ready"
+     
+        sys.stderr.write('\n'+'\t'+'-'*5+'Finish: leaving SPLITTER'+'-'*10+'\n')
+            
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
